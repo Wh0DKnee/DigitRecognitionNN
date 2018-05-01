@@ -40,12 +40,12 @@ std::vector<MNISTDatum> MNISTLoader::GetData(unsigned int startIndex, unsigned i
 	}
 	else {
 		float f;
-		for (size_t x = 0; x < range; x++)
+		for (int x = 0; x < range; x++)
 		{
 			VectorXf temp(784);
-			for (size_t i = 0; i < 28; i++)
+			for (int i = 0; i < 28; i++)
 			{
-				for (size_t j = 0; j < 28; j++)
+				for (int j = 0; j < 28; j++)
 				{
 					f = ((*(data + x + startIndex)).data[i][j]);
 					f /= 255.f;

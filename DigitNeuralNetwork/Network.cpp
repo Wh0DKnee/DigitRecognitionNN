@@ -19,7 +19,7 @@ Network::Network(vector<int> sizes) : sizes(sizes)
 
 void Network::InitializeBiasesAndWeights()
 {
-	for (size_t i = 0; i < layerCount - 1; i++)
+	for (int i = 0; i < layerCount - 1; i++)
 	{
 		weights.push_back(MatrixXf(sizes[i + 1], sizes[i]));
 		biases.push_back(VectorXf(sizes[i + 1]));
@@ -30,9 +30,9 @@ void Network::PopulateNetworkRandomly()
 {
 	for (size_t i = 0; i < weights.size(); i++)
 	{
-		for (size_t j = 0; j < weights[i].rows(); j++)
+		for (Index j = 0; j < weights[i].rows(); j++)
 		{
-			for (size_t k = 0; k < weights[i].cols(); k++)
+			for (Index k = 0; k < weights[i].cols(); k++)
 			{
 				weights[i](j, k) = gaussianRNG.random();
 			}
@@ -54,7 +54,7 @@ Network::Network(vector<int> sizes, vector<VectorXf> biases, vector<MatrixXf> we
 	{
 		throw invalid_argument("the weights or biases are not of length layercount - 1");
 	}
-	for (size_t i = 0; i < layerCount - 1; i++)
+	for (int i = 0; i < layerCount - 1; i++)
 	{
 		if (weights[i].cols() != sizes[i] || weights[i].rows() != sizes[i + 1] || biases[i].rows() !=
 			sizes[i + 1] || biases[i].cols() != 1)
@@ -71,7 +71,7 @@ VectorXf Network::FeedForward(VectorXf inputs)
 	if (inputs.size() != sizes[0]) {
 		throw invalid_argument("Your input vector is of different size than the input layer of the network.");
 	}
-	for (size_t layer = 0; layer < layerCount - 1; layer++)
+	for (int layer = 0; layer < layerCount - 1; layer++)
 	{
 		inputs = ((weights[layer] * (inputs)) + biases[layer]).unaryExpr(&Network::Sigmoid);
 	}
@@ -88,7 +88,7 @@ void Network::SGD(vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, f
 	cout << "miniBatchCount: " << miniBatchCount << endl;
 	cout << "miniBatches size: " << miniBatchSize << endl;
 
-	for (size_t i = 0; i < epochs; i++)
+	for (int i = 0; i < epochs; i++)
 	{
 		auto rng = default_random_engine{};
 		rng.seed(time(0));
@@ -97,7 +97,7 @@ void Network::SGD(vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, f
 		vector<MNISTDatum>::const_iterator first = MNISTData.begin();
 		vector<MNISTDatum>::const_iterator last = MNISTData.begin() + miniBatchSize;
 		vector<vector<MNISTDatum>> miniBatches;
-		for (size_t j = 0; j < miniBatchCount; j++)
+		for (int j = 0; j < miniBatchCount; j++)
 		{
 			miniBatches.push_back(vector<MNISTDatum>(first + (j*miniBatchSize), last + (j*miniBatchSize)));
 		}
@@ -153,7 +153,7 @@ void Network::UpdateMiniBatch(vector<MNISTDatum> miniBatch, float eta)
 {
 	vector<VectorXf> nablaB;
 	vector<MatrixXf> nablaW;
-	for (size_t i = 0; i < layerCount - 1; i++)
+	for (int i = 0; i < layerCount - 1; i++)
 	{
 		// initialize nablaB and nablaW to the proper size
 		nablaB.push_back(VectorXf::Constant(sizes[i + 1], 0.f));
@@ -165,13 +165,13 @@ void Network::UpdateMiniBatch(vector<MNISTDatum> miniBatch, float eta)
 	for (MNISTDatum datum : miniBatch)
 	{
 		Backprop(deltaNablaB, deltaNablaW, datum);
-		for (size_t i = 0; i < layerCount - 1; i++)
+		for (int i = 0; i < layerCount - 1; i++)
 		{
 			nablaB[i] = nablaB[i] + deltaNablaB[i];
 			nablaW[i] = nablaW[i] + deltaNablaW[i];
 		}
 	}
-	for (size_t i = 0; i < layerCount - 1; i++)
+	for (int i = 0; i < layerCount - 1; i++)
 	{
 		biases[i] = biases[i] - (eta / miniBatch.size())*nablaB[i];
 		weights[i] = weights[i] - (eta / miniBatch.size())*nablaW[i];
@@ -186,7 +186,7 @@ void Network::Backprop(vector<VectorXf>& deltaNablaB, vector<MatrixXf>& deltaNab
 	activations.push_back(activation);
 	
 	vector<VectorXf> zs;
-	for (size_t layer = 0; layer < layerCount - 1; layer++)
+	for (int layer = 0; layer < layerCount - 1; layer++)
 	{
 		VectorXf z = weights[layer]*activation + biases[layer];
 		zs.push_back(z);
@@ -197,7 +197,7 @@ void Network::Backprop(vector<VectorXf>& deltaNablaB, vector<MatrixXf>& deltaNab
 	VectorXf delta = costDerivative.cwiseProduct(zs.back().unaryExpr(&Network::SigmoidPrime));
 	deltaNablaB.back() = delta;
 	deltaNablaW.back() = delta * activations[activations.size() - 2].transpose();
-	for (size_t layer = layerCount - 2; layer > 0; layer--)
+	for (int layer = layerCount - 2; layer > 0; layer--)
 	{
 		VectorXf z = zs[layer - 1];
 		VectorXf sp = z.unaryExpr(&Network::SigmoidPrime);

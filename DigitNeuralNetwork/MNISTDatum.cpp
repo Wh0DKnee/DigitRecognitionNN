@@ -10,9 +10,9 @@ MNISTDatum::MNISTDatum()
 
 void MNISTDatum::Print()
 {
-	for (size_t i = 0; i < 28; i++)
+	for (int i = 0; i < 28; i++)
 	{
-		for (size_t j = 0; j < 28; j++)
+		for (int j = 0; j < 28; j++)
 		{
 			char c = '0';
 			if (data(i + j*i) != 0)
