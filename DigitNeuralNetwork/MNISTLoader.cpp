@@ -40,7 +40,7 @@ std::vector<MNISTDatum> MNISTLoader::GetData(unsigned int startIndex, unsigned i
 	}
 	else {
 		float f;
-		for (int x = 0; x < range; x++)
+		for (unsigned int x = 0; x < range; x++)
 		{
 			VectorXf temp(784);
 			for (int i = 0; i < 28; i++)

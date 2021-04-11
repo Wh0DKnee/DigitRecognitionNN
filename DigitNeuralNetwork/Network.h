@@ -21,9 +21,9 @@ private:
 	GaussianRNG gaussianRNG;
 	void InitializeBiasesAndWeights();
 	void PopulateNetworkRandomly();
-	void UpdateMiniBatch(std::vector<MNISTDatum> miniBatch, float eta);
-	void Backprop(std::vector<Eigen::VectorXf> &deltaNablaB, std::vector<Eigen::MatrixXf> &deltaNablaW, MNISTDatum datum);
-	Eigen::VectorXf CostDerivative(Eigen::VectorXf outputActivations, Eigen::VectorXf y);
+	void UpdateMiniBatch(const std::vector<MNISTDatum>& miniBatch, float eta);
+	void Backprop(std::vector<Eigen::VectorXf> &deltaNablaB, std::vector<Eigen::MatrixXf> &deltaNablaW, const MNISTDatum& datum);
+	Eigen::VectorXf CostDerivative(const Eigen::VectorXf& outputActivations, const Eigen::VectorXf& y);
 
 	// Input x has to be between 0 and 9, including both.
 	// Given input 5, this will return (0, 0, 0, 0, 0, 1, 0, 0, 0, 0) transposed,
@@ -41,10 +41,10 @@ public:
 	// Returns the output vector corresponding to the inputs.
 	Eigen::VectorXf FeedForward(Eigen::VectorXf inputs);
 	// Stochastic gradient descent
-	void SGD(std::vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, float eta, std::vector<MNISTDatum> testData);
-	int Evaluate(std::vector<MNISTDatum> testData);
-	std::vector<Eigen::MatrixXf> GetWeights();
-	std::vector<Eigen::VectorXf> GetBiases();
+	void SGD(std::vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, float eta, const std::vector<MNISTDatum>& testData);
+	int Evaluate(const std::vector<MNISTDatum>& testData);
+	const std::vector<Eigen::MatrixXf>& GetWeights();
+	const std::vector<Eigen::VectorXf>& GetBiases();
 	void PrintWeights();
 	void PrintBiases();
 };

@@ -7,10 +7,9 @@
 #include <ctime>
 #include "ProgressBar.h"
 
-using namespace std;
 using namespace Eigen;
 
-Network::Network(vector<int> sizes) : sizes(sizes)
+Network::Network(std::vector<int> sizes) : sizes(sizes)
 {
 	layerCount = sizes.size();
 	InitializeBiasesAndWeights();
@@ -19,7 +18,7 @@ Network::Network(vector<int> sizes) : sizes(sizes)
 
 void Network::InitializeBiasesAndWeights()
 {
-	for (int i = 0; i < layerCount - 1; i++)
+	for (unsigned int i = 0; i < layerCount - 1; i++)
 	{
 		weights.push_back(MatrixXf(sizes[i + 1], sizes[i]));
 		biases.push_back(VectorXf(sizes[i + 1]));
@@ -40,26 +39,26 @@ void Network::PopulateNetworkRandomly()
 	}
 	for (VectorXf &bias : biases)
 	{
-		for (size_t j = 0; j < bias.size(); j++)
+		for (Eigen::Index j = 0; j < bias.size(); j++)
 		{
 			bias(j) = gaussianRNG.random();
 		}
 	}
 }
 
-Network::Network(vector<int> sizes, vector<VectorXf> biases, vector<MatrixXf> weights) : sizes(sizes)
+Network::Network(std::vector<int> sizes, std::vector<VectorXf> biases, std::vector<MatrixXf> weights) : sizes(sizes)
 {
 	layerCount = sizes.size();
 	if (biases.size() != layerCount - 1 || weights.size() != layerCount - 1)
 	{
-		throw invalid_argument("the weights or biases are not of length layercount - 1");
+		throw std::invalid_argument("the weights or biases are not of length layercount - 1");
 	}
-	for (int i = 0; i < layerCount - 1; i++)
+	for (unsigned int i = 0; i < layerCount - 1; i++)
 	{
 		if (weights[i].cols() != sizes[i] || weights[i].rows() != sizes[i + 1] || biases[i].rows() !=
 			sizes[i + 1] || biases[i].cols() != 1)
 		{
-			throw invalid_argument("the weights or biases don't have the correct dimensions for a network of your input dimensions.");
+			throw std::invalid_argument("the weights or biases don't have the correct dimensions for a network of your input dimensions.");
 		}
 	}
 	this->biases = biases;
@@ -69,9 +68,9 @@ Network::Network(vector<int> sizes, vector<VectorXf> biases, vector<MatrixXf> we
 VectorXf Network::FeedForward(VectorXf inputs)
 {
 	if (inputs.size() != sizes[0]) {
-		throw invalid_argument("Your input vector is of different size than the input layer of the network.");
+		throw std::invalid_argument("Your input vector is of different size than the input layer of the network.");
 	}
-	for (int layer = 0; layer < layerCount - 1; layer++)
+	for (unsigned int layer = 0; layer < layerCount - 1; layer++)
 	{
 		inputs = ((weights[layer] * (inputs)) + biases[layer]).unaryExpr(&Network::Sigmoid);
 	}
@@ -79,31 +78,31 @@ VectorXf Network::FeedForward(VectorXf inputs)
 }
 
 // Stochastic gradient descent
-void Network::SGD(vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, float eta, vector<MNISTDatum> testData)
+void Network::SGD(std::vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, float eta, const std::vector<MNISTDatum>& testData)
 {
 	int dataCount = MNISTData.size();
-	cout << "training data size " << dataCount << endl;
+	std::cout << "training data size " << dataCount << std::endl;
 	int testDataCount = testData.size();
 	int miniBatchCount = dataCount / miniBatchSize;
-	cout << "miniBatchCount: " << miniBatchCount << endl;
-	cout << "miniBatches size: " << miniBatchSize << endl;
+	std::cout << "miniBatchCount: " << miniBatchCount << std::endl;
+	std::cout << "miniBatches size: " << miniBatchSize << std::endl;
 
 	for (int i = 0; i < epochs; i++)
 	{
-		auto rng = default_random_engine{};
-		rng.seed(time(0));
+		auto rng = std::default_random_engine{};
+		rng.seed(static_cast<unsigned int>(time(0)));
 		shuffle(MNISTData.begin(), MNISTData.end(), rng);
 		
-		vector<MNISTDatum>::const_iterator first = MNISTData.begin();
-		vector<MNISTDatum>::const_iterator last = MNISTData.begin() + miniBatchSize;
-		vector<vector<MNISTDatum>> miniBatches;
+		std::vector<MNISTDatum>::const_iterator first = MNISTData.begin();
+		std::vector<MNISTDatum>::const_iterator last = MNISTData.begin() + miniBatchSize;
+		std::vector<std::vector<MNISTDatum>> miniBatches; // TODO: implement miniBatches with indexes to avoid copying data
 		for (int j = 0; j < miniBatchCount; j++)
 		{
-			miniBatches.push_back(vector<MNISTDatum>(first + (j*miniBatchSize), last + (j*miniBatchSize)));
+			miniBatches.push_back(std::vector<MNISTDatum>(first + (j*miniBatchSize), last + (j*miniBatchSize)));
 		}
 
 		int mB = 0;
-		for (vector<MNISTDatum> miniBatch : miniBatches)
+		for (const std::vector<MNISTDatum>& miniBatch : miniBatches)
 		{
 			if (mB % 100 == 0) // Update progress bar every 100 mini batches
 			{
@@ -112,29 +111,29 @@ void Network::SGD(vector<MNISTDatum> MNISTData, int epochs, int miniBatchSize, f
 			UpdateMiniBatch(miniBatch, eta);
 			mB++;
 		}
-		cout << endl;
+		std::cout << std::endl;
 		if (testDataCount > 0)
 		{
-			cout << "Epoch: " << i << ", " << Evaluate(testData) << " correct out of " << testDataCount << endl;
+			std::cout << "Epoch: " << i << ", " << Evaluate(testData) << " correct out of " << testDataCount << std::endl;
 		}
 		else
 		{
-			cout << "Epoch " << i << " complete." << endl;
+			std::cout << "Epoch " << i << " complete." << std::endl;
 		}
 		system("pause");
 	}
 	return;
 }
 
-int Network::Evaluate(std::vector<MNISTDatum> testData)
+int Network::Evaluate(const std::vector<MNISTDatum>& testData)
 {	
 	int correctCount = 0;
 	int maxIndex = 0;
-	for (MNISTDatum testDatum : testData)
+	for (const MNISTDatum& testDatum : testData)
 	{
 		VectorXf output = FeedForward(testDatum.GetData());
 		float maxVal = output.maxCoeff();
-		for (size_t i = 0; i < output.size(); i++)
+		for (Eigen::Index i = 0; i < output.size(); i++)
 		{
 			if (output[i] == maxVal)
 			{
@@ -149,44 +148,44 @@ int Network::Evaluate(std::vector<MNISTDatum> testData)
 	return correctCount;
 }
 
-void Network::UpdateMiniBatch(vector<MNISTDatum> miniBatch, float eta)
+void Network::UpdateMiniBatch(const std::vector<MNISTDatum>& miniBatch, float eta)
 {
-	vector<VectorXf> nablaB;
-	vector<MatrixXf> nablaW;
-	for (int i = 0; i < layerCount - 1; i++)
+	std::vector<VectorXf> nablaB;
+	std::vector<MatrixXf> nablaW;
+	for (unsigned int i = 0; i < layerCount - 1; i++)
 	{
 		// initialize nablaB and nablaW to the proper size
 		nablaB.push_back(VectorXf::Constant(sizes[i + 1], 0.f));
 		nablaW.push_back(MatrixXf::Constant(sizes[i + 1], sizes[i], 0.f));
 	}
-	vector<VectorXf> deltaNablaB(nablaB);
-	vector<MatrixXf> deltaNablaW(nablaW);
+	std::vector<VectorXf> deltaNablaB(nablaB);
+	std::vector<MatrixXf> deltaNablaW(nablaW);
 
-	for (MNISTDatum datum : miniBatch)
+	for (const MNISTDatum& datum : miniBatch)
 	{
 		Backprop(deltaNablaB, deltaNablaW, datum);
-		for (int i = 0; i < layerCount - 1; i++)
+		for (unsigned int i = 0; i < layerCount - 1; i++)
 		{
 			nablaB[i] = nablaB[i] + deltaNablaB[i];
 			nablaW[i] = nablaW[i] + deltaNablaW[i];
 		}
 	}
-	for (int i = 0; i < layerCount - 1; i++)
+	for (unsigned int i = 0; i < layerCount - 1; i++)
 	{
 		biases[i] = biases[i] - (eta / miniBatch.size())*nablaB[i];
 		weights[i] = weights[i] - (eta / miniBatch.size())*nablaW[i];
 	}
 }
 
-void Network::Backprop(vector<VectorXf>& deltaNablaB, vector<MatrixXf>& deltaNablaW, MNISTDatum datum)
+void Network::Backprop(std::vector<VectorXf>& deltaNablaB, std::vector<MatrixXf>& deltaNablaW, const MNISTDatum& datum)
 {
 	VectorXf activation;
-	vector<VectorXf> activations;
+	std::vector<VectorXf> activations;
 	activation = datum.GetData();
 	activations.push_back(activation);
 	
-	vector<VectorXf> zs;
-	for (int layer = 0; layer < layerCount - 1; layer++)
+	std::vector<VectorXf> zs;
+	for (unsigned int layer = 0; layer < layerCount - 1; layer++)
 	{
 		VectorXf z = weights[layer]*activation + biases[layer];
 		zs.push_back(z);
@@ -209,7 +208,7 @@ void Network::Backprop(vector<VectorXf>& deltaNablaB, vector<MatrixXf>& deltaNab
 	}
 }
 
-Eigen::VectorXf Network::CostDerivative(Eigen::VectorXf outputActivations, Eigen::VectorXf y)
+Eigen::VectorXf Network::CostDerivative(const Eigen::VectorXf& outputActivations, const Eigen::VectorXf& y)
 {
 	return (outputActivations - y);
 }
@@ -218,7 +217,7 @@ Eigen::VectorXf Network::CreateTruthVectorFromNumber(int number)
 {
 	if (number < 0 || number > 9) 
 	{
-		throw invalid_argument("number has to be between 0 and 9");
+		throw std::invalid_argument("number has to be between 0 and 9");
 	}
 	VectorXf vec = VectorXf::Constant(10, 0.f);
 	vec(number) = 1.f;
@@ -238,20 +237,20 @@ float Network::SigmoidPrime(float z)
 void Network::PrintWeights()
 {
 	int matIndex = 0;
-	for (MatrixXf mat : weights)
+	for (const MatrixXf& mat : weights)
 	{
-		cout << "Weights from layer " << matIndex << " to layer " << (matIndex + 1) << ":" << endl;
-		cout << mat << endl;
+		std::cout << "Weights from layer " << matIndex << " to layer " << (matIndex + 1) << ":" << std::endl;
+		std::cout << mat << std::endl;
 		matIndex++;
 	}
 }
 
-std::vector<Eigen::MatrixXf> Network::GetWeights()
+const std::vector<Eigen::MatrixXf>& Network::GetWeights()
 {
 	return weights;
 }
 
-std::vector<Eigen::VectorXf> Network::GetBiases()
+const std::vector<Eigen::VectorXf>& Network::GetBiases()
 {
 	return biases;
 }
@@ -259,10 +258,10 @@ std::vector<Eigen::VectorXf> Network::GetBiases()
 void Network::PrintBiases()
 {
 	int vecIndex = 0;
-	for (VectorXf bias : biases)
+	for (const VectorXf& bias : biases)
 	{
-		cout << "Biases for layer " << vecIndex << ":" << endl;
-		cout << bias << endl;
+		std::cout << "Biases for layer " << vecIndex << ":" << std::endl;
+		std::cout << bias << std::endl;
 		vecIndex++;
 	}
 }

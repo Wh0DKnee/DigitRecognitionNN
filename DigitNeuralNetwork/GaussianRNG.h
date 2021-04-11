@@ -18,6 +18,6 @@ public:
 
 	float random() 
 	{
-		return dist(e2);
+		return static_cast<float>(dist(e2));
 	}
 };

@@ -27,12 +27,12 @@ void MNISTDatum::Print()
 	cout << label << endl;
 }
 
-Eigen::VectorXf MNISTDatum::GetData()
+Eigen::VectorXf MNISTDatum::GetData() const
 {
 	return data;
 }
 
-int MNISTDatum::GetLabel()
+int MNISTDatum::GetLabel() const
 {
 	return label;
 }

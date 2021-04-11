@@ -14,7 +14,7 @@ public:
 	MNISTDatum();
 
 	void Print();
-	Eigen::VectorXf GetData();
-	int GetLabel();
+	Eigen::VectorXf GetData() const;
+	int GetLabel() const;
 };
 
